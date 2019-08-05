@@ -99,12 +99,10 @@ def getHelp(bot, update):
 
     if str(update.message.chat_id) in whitelist:
         response_message = """/play nome_da_música ou url.
-        /pause Pausa a faixa atualmente sendo reproduzida.
-        /resume Retomar a música pausada.
-        /np Mostra o nome da música. (falta desenvolver)
-        /volume Verifique ou altere o volume atual.
-        /skip Ignora a música atual e reproduz a próxima música da fila
-        /queue Mostra todas as músicas na fila"""
+/pause Pausa a faixa atualmente sendo reproduzida.
+/resume Retomar a música pausada.
+/volume Verifique ou altere o volume atual.
+/skip Ignora a música atual e reproduz a próxima música da fila"""
     else:
         response_message = "Você não tem permissão para usar este comando, digite /password <senha>"
 
@@ -187,9 +185,9 @@ def setVolume(bot, update):
             response_message = "Digite um valor entre 0 a 100"
         else:
             command_file = open(path_command, 'w')
-            command_file.write('volume'+text)
+            command_file.write('volume'+str(text))
             command_file.close()
-            response_message = "Volume alterado para %s!" % str(text)
+            response_message = "Volume alterado: %s%" % str(text)
     else:
         response_message = "Você não tem permissão para usar este comando, digite /password <senha>"
 
