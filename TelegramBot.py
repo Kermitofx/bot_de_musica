@@ -1,4 +1,5 @@
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+from datetime import datetime
 from bs4 import BeautifulSoup
 import urllib.request
 
@@ -53,8 +54,19 @@ def getWhiteList():
     return whitelist
 
 
+
+def logger(update):
+    if update:
+        log = datetime.strftime(datetime.now(), '%H:%M:%S %d/%m/%Y')
+        log += ' '+str(update.message.chat_id)+' '+update.message.chat['first_name']+': '+update.message.text
+        return log
+    else:
+        return 'Erro: objeto vazio'
+
+
+
 def start(bot, update):
-    history(str(update.message.chat_id)+' '+update.message.chat['first_name']+': '+update.message.text)
+    history(logger(update))
 
     response_message = 'Digite /password <senha> para utilizar este bot'
     bot.send_message(
@@ -64,7 +76,7 @@ def start(bot, update):
 
 
 def verifyPassword(bot, update):
-    history(str(update.message.chat_id)+' '+update.message.chat['first_name']+': '+update.message.text)
+    history(logger(update))
 
     whitelist = getWhiteList()
 
@@ -94,7 +106,7 @@ def verifyPassword(bot, update):
 
 
 def getHelp(bot, update):
-    history(str(update.message.chat_id)+' '+update.message.chat['first_name']+': '+update.message.text)
+    history(logger(update))
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
@@ -113,7 +125,7 @@ def getHelp(bot, update):
 
 
 def setPause(bot, update):
-    history(str(update.message.chat_id)+' '+update.message.chat['first_name']+': '+update.message.text)
+    history(logger(update))
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
@@ -131,7 +143,7 @@ def setPause(bot, update):
 
 
 def setResume(bot, update):
-    history(str(update.message.chat_id)+' '+update.message.chat['first_name']+': '+update.message.text)
+    history(logger(update))
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
@@ -149,7 +161,7 @@ def setResume(bot, update):
 
 
 def skipMusic(bot, update):
-    history(str(update.message.chat_id)+' '+update.message.chat['first_name']+': '+update.message.text)
+    history(logger(update))
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
@@ -167,7 +179,7 @@ def skipMusic(bot, update):
 
 
 def setVolume(bot, update):
-    history(str(update.message.chat_id)+' '+update.message.chat['first_name']+': '+update.message.text)
+    history(logger(update))
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
@@ -198,7 +210,7 @@ def setVolume(bot, update):
         
 
 def playMusic(bot, update):
-    history(str(update.message.chat_id)+' '+update.message.chat['first_name']+': '+update.message.text)
+    history(logger(update))
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
@@ -256,5 +268,5 @@ def main():
 
 
 if __name__ == '__main__':
-    print('Bot iniciado!')
+    print('Bot iniciado!\n')
     main()

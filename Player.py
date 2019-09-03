@@ -82,7 +82,7 @@ def main():
             command_file.close()
 
 
-print("Player iniciado!")
+print("Player iniciado!\n")
 while True:
     main()
     sleep(0.5)
