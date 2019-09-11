@@ -4,11 +4,12 @@ from bs4 import BeautifulSoup
 import urllib.request
 
 
+path_communication = 'files/communication.txt'
 path_command = 'files/command.txt'
-path_queue = 'files/queue.txt'
 path_whitelist = 'files/users.txt'
 path_history = 'files/history.txt'
-path_communication = 'files/communication.txt'
+path_token = 'files/token.txt'
+path_queue = 'files/queue.txt'
 
 
 try:
@@ -39,6 +40,17 @@ except:
     communication_file = open(path_communication, 'w')
     communication_file.close()
 
+try:
+    token_file = open(path_token, 'r')
+    token = token_file.read()
+    token_file.close()
+except:
+    token = input('Token do telegram não encontrado, cole o Token de seu Bot aqui: ')
+
+    token_file = open(path_token, 'w')
+    token_file.write(str(token))
+    token_file.close()
+
 
 password = input('Digite uma senha: ')
 help_message = '''/play nome_da_música ou url.
@@ -57,9 +69,9 @@ def history(msg):
 
 
 
-def set_command(telegram_id,command_player):
+def set_command(update,command_player):
     command_file = open(path_command, 'w')
-    command_file.write(telegram_id+' '+command_player)
+    command_file.write(str(update.message.chat_id)+' '+command_player+' '+update.message.chat['first_name'])
     command_file.close()
 
 
@@ -153,7 +165,7 @@ def setPause(bot, update):
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
-        set_command(str(update.message.chat_id),'pause')
+        set_command(update,'pause')
         response_message = 'Música pausada!'
     else:
         response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
@@ -169,7 +181,7 @@ def setResume(bot, update):
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
-        set_command(str(update.message.chat_id),'resume')
+        set_command(update,'resume')
         response_message = 'Reproduzindo música!'
     else:
         response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
@@ -185,7 +197,7 @@ def skipMusic(bot, update):
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
-        set_command(str(update.message.chat_id),'skip')
+        set_command(update,'skip')
         response_message = 'Reproduzindo próxima música!'
     else:
         response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
@@ -202,7 +214,7 @@ def setVolume(bot, update):
 
     if str(update.message.chat_id) in whitelist:
         if update.message.text == '/volume':
-            set_command(str(update.message.chat_id),'volume')
+            set_command(update,'volume')
         else:
             try:
                 text = int(update.message.text.split(' ',1)[1])
@@ -217,7 +229,7 @@ def setVolume(bot, update):
             if text == None:
                 response_message = 'Digite um valor entre 0 a 100'
             else:
-                set_command(str(update.message.chat_id),'volume'+str(text))
+                set_command(update,'volume'+str(text))
                 response_message = 'Volume alterado: %s%' % str(text)
     else:
         response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
@@ -267,20 +279,18 @@ def playMusic(bot, update):
 
 
 def main():
-    updater = Updater(token='830479165:AAEj5trP77qm3O6IU85qxtlfsTSaz5bIin4')
+    updater = Updater(token=token)
     dispatcher = updater.dispatcher
 
-    dispatcher.add_handler(CommandHandler('start', start))
-    dispatcher.add_handler(CommandHandler('password', verifyPassword))
-    dispatcher.add_handler(CommandHandler('help', getHelp))
-    dispatcher.add_handler(CommandHandler('pause', setPause))
-    dispatcher.add_handler(CommandHandler('stop', setPause))
-    dispatcher.add_handler(CommandHandler('resume', setResume))
-    dispatcher.add_handler(CommandHandler('volume', setVolume))
-    dispatcher.add_handler(CommandHandler('play', playMusic))
-    dispatcher.add_handler(CommandHandler('p', playMusic))
-    dispatcher.add_handler(CommandHandler('skip', skipMusic))
-    dispatcher.add_handler(CommandHandler('s', skipMusic))
+    dispatcher.add_handler(CommandHandler(['password', 'pw'], verifyPassword))
+    dispatcher.add_handler(CommandHandler(['skip', 's', 'next'], skipMusic))
+    dispatcher.add_handler(CommandHandler(['play', 'p'], playMusic))
+    dispatcher.add_handler(CommandHandler(['resume'], setResume))
+    dispatcher.add_handler(CommandHandler(['volume'], setVolume))
+    dispatcher.add_handler(CommandHandler(['pause'], setPause))
+    dispatcher.add_handler(CommandHandler(['stop'], setPause))
+    dispatcher.add_handler(CommandHandler(['help'], getHelp))
+    dispatcher.add_handler(CommandHandler(['start'], start))
 
     updater.start_polling()
     updater.idle()

@@ -51,7 +51,10 @@ def get_link():
 
 
 def play_music(link):
-    video = pafy.new(link)
+    video = pafy.new(link,ydl_opts={
+        'ignoreerrors': True,
+        'quiet': True,
+    })
     best = video.getbest()
     playurl = best.url
 
@@ -81,8 +84,9 @@ def main():
 
 
         if command != '':
-            telegram_id = command.split(' ',1)[0]
-            command = command.split(' ',1)[1]
+            telegram_id = command.split(' ',2)[0]
+            telegram_name = command.split(' ',2)[2]
+            command = command.split(' ',2)[1]
 
             if command == 'pause':
                 player.set_pause(1)
@@ -93,7 +97,7 @@ def main():
                 if link:
                     play_music(link)
             elif command == 'volume':
-                msg = 'Volume: '+str(player.audio_get_volume())
+                msg = 'Volume atual: '+str(player.audio_get_volume())
                 set_communication(telegram_id,msg)
             elif 'volume' in command:
                 player.audio_set_volume(int(command[6:]))
@@ -106,4 +110,4 @@ def main():
 print('Player iniciado!\n')
 while True:
     main()
-    sleep(0.5)
+    sleep(0.3)
