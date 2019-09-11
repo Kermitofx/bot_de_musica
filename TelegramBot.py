@@ -6,8 +6,9 @@ import urllib.request
 
 path_command = 'files/command.txt'
 path_queue = 'files/queue.txt'
-path_whitelist = 'files/whitelist.txt'
+path_whitelist = 'files/users.txt'
 path_history = 'files/history.txt'
+path_communication = 'files/communication.txt'
 
 
 try:
@@ -31,7 +32,21 @@ except:
     history_file = open(path_history, 'w')
     history_file.close()
 
-password = input("Digite uma senha: ")
+try:
+    communication_file = open(path_communication, 'r')
+    communication_file.close()
+except:
+    communication_file = open(path_communication, 'w')
+    communication_file.close()
+
+
+password = input('Digite uma senha: ')
+help_message = '''/play nome_da_música ou url.
+/pause Pausa a faixa atualmente sendo reproduzida.
+/resume Retomar a música pausada.
+/volume Verifique ou altere o volume atual.
+/skip Ignora a música atual e reproduz a próxima música da fila'''
+
 
 
 def history(msg):
@@ -39,6 +54,14 @@ def history(msg):
     history_file.write(msg+'\n')
     history_file.close()
     print(msg)
+
+
+
+def set_command(telegram_id,command_player):
+    command_file = open(path_command, 'w')
+    command_file.write(telegram_id+' '+command_player)
+    command_file.close()
+
 
 
 def getWhiteList():
@@ -67,8 +90,13 @@ def logger(update):
 
 def start(bot, update):
     history(logger(update))
+    whitelist = getWhiteList()
 
-    response_message = 'Digite /password <senha> para utilizar este bot'
+    if str(update.message.chat_id) in whitelist:
+        response_message = help_message
+    else:
+        response_message = 'Digite /password <senha> para utilizar este bot'
+
     bot.send_message(
         chat_id=update.message.chat_id,
         text=response_message
@@ -81,7 +109,7 @@ def verifyPassword(bot, update):
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
-        response_message = "Você já está cadastrado, digite /help para ver os comandos."
+        response_message = 'Você já está cadastrado, digite /help para ver os comandos.'
     else:
         try:
             text = update.message.text.split(' ',1)[1]
@@ -89,15 +117,15 @@ def verifyPassword(bot, update):
             text = None
 
         if text == None:
-            response_message = "Digite uma senha para usar o bot."
+            response_message = 'Digite uma senha para usar o bot.'
         elif text == password:
             whitelist_file = open(path_whitelist, 'a')
             whitelist_file.write(str(update.message.chat_id)+'\n')
             whitelist_file.close()
 
-            response_message = "Senha correta, digite /help para ver os comandos."
+            response_message = 'Senha correta, digite /help para ver os comandos.'
         else:
-            response_message = "Senha incorreta, tente novamente."
+            response_message = 'Senha incorreta, tente novamente.'
 
     bot.send_message(
         chat_id=update.message.chat_id,
@@ -110,13 +138,9 @@ def getHelp(bot, update):
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
-        response_message = """/play nome_da_música ou url.
-/pause Pausa a faixa atualmente sendo reproduzida.
-/resume Retomar a música pausada.
-/volume Verifique ou altere o volume atual.
-/skip Ignora a música atual e reproduz a próxima música da fila"""
+        response_message = help_message
     else:
-        response_message = "Você não tem permissão para usar este comando, digite /password <senha>"
+        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
 
     bot.send_message(
         chat_id=update.message.chat_id,
@@ -129,12 +153,10 @@ def setPause(bot, update):
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
-        command_file = open(path_command, 'w')
-        command_file.write('pause')
-        command_file.close()
-        response_message = "Música pausada!"
+        set_command(str(update.message.chat_id),'pause')
+        response_message = 'Música pausada!'
     else:
-        response_message = "Você não tem permissão para usar este comando, digite /password <senha>"
+        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
 
     bot.send_message(
         chat_id=update.message.chat_id,
@@ -147,12 +169,10 @@ def setResume(bot, update):
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
-        command_file = open(path_command, 'w')
-        command_file.write('resume')
-        command_file.close()
-        response_message = "Reproduzindo música!"
+        set_command(str(update.message.chat_id),'resume')
+        response_message = 'Reproduzindo música!'
     else:
-        response_message = "Você não tem permissão para usar este comando, digite /password <senha>"
+        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
 
     bot.send_message(
         chat_id=update.message.chat_id,
@@ -165,12 +185,10 @@ def skipMusic(bot, update):
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
-        command_file = open(path_command, 'w')
-        command_file.write('skip')
-        command_file.close()
-        response_message = "Reproduzindo próxima música!"
+        set_command(str(update.message.chat_id),'skip')
+        response_message = 'Reproduzindo próxima música!'
     else:
-        response_message = "Você não tem permissão para usar este comando, digite /password <senha>"
+        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
 
     bot.send_message(
         chat_id=update.message.chat_id,
@@ -183,25 +201,26 @@ def setVolume(bot, update):
     whitelist = getWhiteList()
 
     if str(update.message.chat_id) in whitelist:
-        try:
-            text = int(update.message.text.split(' ',1)[1])
-
-            if text < 0:
-                text = 0
-            elif text > 100:
-                text = 100
-        except:
-            text = None
-
-        if text == None:
-            response_message = "Digite um valor entre 0 a 100"
+        if update.message.text == '/volume':
+            set_command(str(update.message.chat_id),'volume')
         else:
-            command_file = open(path_command, 'w')
-            command_file.write('volume'+str(text))
-            command_file.close()
-            response_message = "Volume alterado: %s%" % str(text)
+            try:
+                text = int(update.message.text.split(' ',1)[1])
+
+                if text < 0:
+                    text = 0
+                elif text > 100:
+                    text = 100
+            except:
+                text = None
+
+            if text == None:
+                response_message = 'Digite um valor entre 0 a 100'
+            else:
+                set_command(str(update.message.chat_id),'volume'+str(text))
+                response_message = 'Volume alterado: %s%' % str(text)
     else:
-        response_message = "Você não tem permissão para usar este comando, digite /password <senha>"
+        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
 
     bot.send_message(
         chat_id=update.message.chat_id,
@@ -225,7 +244,7 @@ def playMusic(bot, update):
             link = textToSearch
         else:
             query = urllib.parse.quote(textToSearch)
-            url = "https://www.youtube.com/results?search_query=" + query
+            url = 'https://www.youtube.com/results?search_query=' + query
             response = urllib.request.urlopen(url)
             html = response.read()
             soup = BeautifulSoup(html, 'html.parser')
@@ -237,9 +256,9 @@ def playMusic(bot, update):
         queue_file = open(path_queue, 'a')
         queue_file.write(link+'\n')
         queue_file.close()
-        response_message = "Música adicionada na fila!"
+        response_message = 'Música adicionada na fila!'
     else:
-        response_message = "Você não tem permissão para usar este comando, digite /password <senha>"
+        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
 
     bot.send_message(
         chat_id=update.message.chat_id,
@@ -265,6 +284,7 @@ def main():
 
     updater.start_polling()
     updater.idle()
+
 
 
 if __name__ == '__main__':

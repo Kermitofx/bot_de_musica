@@ -5,12 +5,20 @@ import vlc
 
 path_queue = 'files/queue.txt'
 path_command = 'files/command.txt'
+path_communication = 'files/communication.txt'
 
 Instance = vlc.Instance()
 player = Instance.media_player_new()
 command_file = open(path_command, 'w')
 command_file.write('')
 command_file.close()
+
+try:
+    communication_file = open(path_communication, 'r')
+    communication_file.close()
+except:
+    communication_file = open(path_communication, 'w')
+    communication_file.close()
 
 
 def get_link():
@@ -53,6 +61,12 @@ def play_music(link):
     player.play()
 
 
+def set_communication(telegram_id,msg):
+    communication_file = open(path_communication, 'a')
+    communication_file.write(telegram_id+' '+msg+'\n')
+    communication_file.close()
+
+
 def main():
     if player.get_state() == vlc.State.NothingSpecial or player.get_state() == vlc.State.Ended:
         link = get_link()
@@ -65,16 +79,23 @@ def main():
         command = command_file.read()
         command_file.close()
 
+
         if command != '':
-            if command == "pause":
+            telegram_id = command.split(' ',1)[0]
+            command = command.split(' ',1)[1]
+
+            if command == 'pause':
                 player.set_pause(1)
-            elif command == "resume":
+            elif command == 'resume':
                 player.set_pause(0)
-            elif command == "skip":
+            elif command == 'skip':
                 link = get_link()
                 if link:
                     play_music(link)
-            elif "volume" in command:
+            elif command == 'volume':
+                msg = 'Volume: '+str(player.audio_get_volume())
+                set_communication(telegram_id,msg)
+            elif 'volume' in command:
                 player.audio_set_volume(int(command[6:]))
 
             command_file = open(path_command, 'w')
@@ -82,7 +103,7 @@ def main():
             command_file.close()
 
 
-print("Player iniciado!\n")
+print('Player iniciado!\n')
 while True:
     main()
     sleep(0.5)
