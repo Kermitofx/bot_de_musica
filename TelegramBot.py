@@ -279,7 +279,7 @@ def playMusic(bot, update):
 
 
 def main():
-    updater = Updater(token=token)
+    updater = Updater(token)
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler(['password', 'pw'], verifyPassword))
