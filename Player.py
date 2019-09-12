@@ -54,12 +54,14 @@ def play_music(link):
     video = pafy.new(link,ydl_opts={
         'ignoreerrors': True,
         'quiet': True,
+        'no_warnings': True,
+        'nocheckcertificate': True,
+        'age_limit': 50,
     })
-    best = video.getbest()
-    playurl = best.url
+
+    playurl = video.getbestaudio().url
 
     Media = Instance.media_new(playurl)
-    Media.get_mrl()
     player.set_media(Media)
     player.play()
 
