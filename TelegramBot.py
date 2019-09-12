@@ -1,6 +1,8 @@
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+from os import mkdir as create
 from datetime import datetime
 from bs4 import BeautifulSoup
+from os.path import exists
 import urllib.request
 
 
@@ -11,6 +13,8 @@ path_history = 'files/history.txt'
 path_token = 'files/token.txt'
 path_queue = 'files/queue.txt'
 
+if not exists('files'):
+    create('files')
 
 try:
     command_file = open(path_command, 'r')

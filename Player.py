@@ -1,3 +1,5 @@
+from os import mkdir as create
+from os.path import exists
 from time import sleep
 import pafy
 import vlc
@@ -6,6 +8,9 @@ import vlc
 path_queue = 'files/queue.txt'
 path_command = 'files/command.txt'
 path_communication = 'files/communication.txt'
+
+if not exists('files'):
+    create('files')
 
 Instance = vlc.Instance()
 player = Instance.media_player_new()
