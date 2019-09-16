@@ -78,43 +78,43 @@ def set_communication(telegram_id,msg):
 
 
 def main():
-    if player.get_state() == vlc.State.NothingSpecial or player.get_state() == vlc.State.Ended:
-        link = get_link()
+    while True:
+        if player.get_state() == vlc.State.NothingSpecial or player.get_state() == vlc.State.Ended:
+            link = get_link()
 
-        if link:
-            play_music(link)
+            if link:
+                play_music(link)
 
-    else:
-        command_file = open(path_command, 'r')
-        command = command_file.read()
-        command_file.close()
-
-
-        if command != '':
-            telegram_id = command.split(' ',2)[0]
-            telegram_name = command.split(' ',2)[2]
-            command = command.split(' ',2)[1]
-
-            if command == 'pause':
-                player.set_pause(1)
-            elif command == 'resume':
-                player.set_pause(0)
-            elif command == 'skip':
-                link = get_link()
-                if link:
-                    play_music(link)
-            elif command == 'volume':
-                msg = 'Volume atual: '+str(player.audio_get_volume())
-                set_communication(telegram_id,msg)
-            elif 'volume' in command:
-                player.audio_set_volume(int(command[6:]))
-
-            command_file = open(path_command, 'w')
-            command_file.write('')
+        else:
+            command_file = open(path_command, 'r')
+            command = command_file.read()
             command_file.close()
 
 
+            if command != '':
+                telegram_id = command.split(' ',2)[0]
+                telegram_name = command.split(' ',2)[2]
+                command = command.split(' ',2)[1]
+
+                if command == 'pause':
+                    player.set_pause(1)
+                elif command == 'resume':
+                    player.set_pause(0)
+                elif command == 'skip':
+                    link = get_link()
+                    if link:
+                        play_music(link)
+                elif command == 'volume':
+                    msg = 'Volume atual: '+str(player.audio_get_volume())
+                    set_communication(telegram_id,msg)
+                elif 'volume' in command:
+                    player.audio_set_volume(int(command[6:]))
+
+                command_file = open(path_command, 'w')
+                command_file.write('')
+                command_file.close()
+        sleep(0.3)
+
+
 print('Player iniciado!\n')
-while True:
-    main()
-    sleep(0.3)
+main()

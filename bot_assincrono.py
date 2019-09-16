@@ -1,9 +1,13 @@
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+from multiprocessing import Process
 from os import mkdir as create
 from datetime import datetime
 from bs4 import BeautifulSoup
 from os.path import exists
+from time import sleep
 import urllib.request
+import pafy
+import vlc
 
 
 path_communication = 'files/communication.txt'
@@ -63,7 +67,61 @@ help_message = '''/play nome_da_música ou url.
 /volume Verifique ou altere o volume atual.
 /skip Ignora a música atual e reproduz a próxima música da fila'''
 
+Instance = vlc.Instance()
+player = Instance.media_player_new()
 
+
+def get_link():
+    try:
+        queue_file = open(path_queue, 'r')
+        queue = queue_file.read()
+        queue_file.close()
+
+        cut = queue.find('\n')
+
+        if cut != -1:
+            link = queue[0:cut]
+            queue = queue[cut+1:]
+
+            queue_file = open(path_queue, 'w')
+            queue_file.write(queue)
+            queue_file.close()
+
+            return link
+
+        else:
+            return ''
+
+    except:
+        queue_file = open(path_queue, 'w')
+        queue_file.close()
+        link = ''
+
+    return link
+
+
+def play_music(link):
+    video = pafy.new(link,ydl_opts={
+        'ignoreerrors': True,
+        'quiet': True,
+        'no_warnings': True,
+        'nocheckcertificate': True,
+        'age_limit': 50,
+    })
+
+    playurl = video.getbestaudio().url
+
+    Media = Instance.media_new(playurl)
+    player.set_media(Media)
+    player.play()
+
+
+def set_communication(telegram_id,msg):
+    communication_file = open(path_communication, 'a')
+    communication_file.write(telegram_id+' '+msg+'\n')
+    communication_file.close()
+
+    
 
 def history(msg):
     history_file = open(path_history, 'a')
@@ -117,7 +175,6 @@ def start(bot, update):
         chat_id=update.message.chat_id,
         text=response_message
     )
-    
 
 
 def verifyPassword(bot, update):
@@ -283,7 +340,49 @@ def playMusic(bot, update):
     )
 
 
-def main():
+
+def main_player():
+    while True:
+        if player.get_state() == vlc.State.NothingSpecial or player.get_state() == vlc.State.Ended:
+            link = get_link()
+
+            if link:
+                play_music(link)
+
+        else:
+            command_file = open(path_command, 'r')
+            command = command_file.read()
+            command_file.close()
+
+
+            if command != '':
+                telegram_id = command.split(' ',2)[0]
+                telegram_name = command.split(' ',2)[2]
+                command = command.split(' ',2)[1]
+
+                if command == 'pause':
+                    player.set_pause(1)
+                elif command == 'resume':
+                    player.set_pause(0)
+                elif command == 'skip':
+                    link = get_link()
+                    if link:
+                        play_music(link)
+                elif command == 'volume':
+                    msg = 'Volume atual: '+str(player.audio_get_volume())
+                    set_communication(telegram_id,msg)
+                elif 'volume' in command:
+                    player.audio_set_volume(int(command[6:]))
+
+                command_file = open(path_command, 'w')
+                command_file.write('')
+                command_file.close()
+
+        sleep(0.3)
+
+
+
+def main_telegram():
     updater = Updater(token)
     dispatcher = updater.dispatcher
 
@@ -302,6 +401,14 @@ def main():
 
 
 
-if __name__ == '__main__':
-    print('Bot iniciado!\n')
-    main()
+if __name__ == "__main__":
+    telegram_process = Process(target=main_telegram)
+    player_process = Process(target=main_player)
+
+    telegram_process.start()
+    player_process.start()
+
+    telegram_process.join()
+
+    print('teste')
+    player_process.join()
