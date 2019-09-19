@@ -70,6 +70,8 @@ def play_music(link):
     player.set_media(Media)
     player.play()
 
+    return video.title
+
 
 def set_communication(telegram_id,msg):
     communication_file = open(path_communication, 'a')
@@ -83,7 +85,7 @@ def main():
             link = get_link()
 
             if link:
-                play_music(link)
+                music_title = play_music(link)
 
         else:
             command_file = open(path_command, 'r')
@@ -103,12 +105,21 @@ def main():
                 elif command == 'skip':
                     link = get_link()
                     if link:
-                        play_music(link)
+                        music_title = play_music(link)
                 elif command == 'volume':
-                    msg = 'Volume atual: '+str(player.audio_get_volume())
+                    msg = 'Volume atual: '+str(player.audio_get_volume())+'%'
                     set_communication(telegram_id,msg)
                 elif 'volume' in command:
                     player.audio_set_volume(int(command[6:]))
+                elif command == 'nowplaying':
+                    if player.get_state() == vlc.State.Playing:
+                        msg = 'Tocando no momento: '+str(music_title)
+                    elif player.get_state() == vlc.State.Paused:
+                        msg = 'Música pausada: '+str(music_title)
+                    else:
+                        msg = 'Nenhuma música está sendo reproduzida no momento'
+                    
+                    set_communication(telegram_id,msg)
 
                 command_file = open(path_command, 'w')
                 command_file.write('')

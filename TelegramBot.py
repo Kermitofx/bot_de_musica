@@ -1,9 +1,13 @@
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+from multiprocessing import Process
 from os import mkdir as create
 from datetime import datetime
 from bs4 import BeautifulSoup
 from os.path import exists
+from time import sleep
 import urllib.request
+import requests
+import pafy
 
 
 path_communication = 'files/communication.txt'
@@ -55,11 +59,12 @@ except:
     token_file.write(str(token))
     token_file.close()
 
-
+user_blocked = 'Você não tem permissão para usar este comando, digite /password <senha>'
 password = input('Digite uma senha: ')
 help_message = '''/play nome_da_música ou url.
 /pause Pausa a faixa atualmente sendo reproduzida.
 /resume Retomar a música pausada.
+/np Mostra o nome da atual música.
 /volume Verifique ou altere o volume atual.
 /skip Ignora a música atual e reproduz a próxima música da fila'''
 
@@ -103,6 +108,13 @@ def logger(update):
         return 'Erro: objeto vazio'
 
 
+def setAnswer(user,message):
+    if message:
+        answer = requests.get('https://api.telegram.org/bot'+str(token)+'/sendMessage?chat_id='+str(user)+'&text='+str(message))
+        return True
+    else:
+        return False
+
 
 def start(bot, update):
     history(logger(update))
@@ -113,10 +125,7 @@ def start(bot, update):
     else:
         response_message = 'Digite /password <senha> para utilizar este bot'
 
-    bot.send_message(
-        chat_id=update.message.chat_id,
-        text=response_message
-    )
+    setAnswer(update.message.chat_id,response_message)
     
 
 
@@ -144,10 +153,7 @@ def verifyPassword(bot, update):
         else:
             response_message = 'Senha incorreta, tente novamente.'
 
-    bot.send_message(
-        chat_id=update.message.chat_id,
-        text=response_message
-    )
+    setAnswer(update.message.chat_id,response_message)
 
 
 def getHelp(bot, update):
@@ -157,12 +163,9 @@ def getHelp(bot, update):
     if str(update.message.chat_id) in whitelist:
         response_message = help_message
     else:
-        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
+        response_message = user_blocked
 
-    bot.send_message(
-        chat_id=update.message.chat_id,
-        text=response_message
-    )
+    setAnswer(update.message.chat_id,response_message)
 
 
 def setPause(bot, update):
@@ -173,12 +176,9 @@ def setPause(bot, update):
         set_command(update,'pause')
         response_message = 'Música pausada!'
     else:
-        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
+        response_message = user_blocked
 
-    bot.send_message(
-        chat_id=update.message.chat_id,
-        text=response_message
-    )
+    setAnswer(update.message.chat_id,response_message)
 
 
 def setResume(bot, update):
@@ -189,12 +189,9 @@ def setResume(bot, update):
         set_command(update,'resume')
         response_message = 'Reproduzindo música!'
     else:
-        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
+        response_message = user_blocked
 
-    bot.send_message(
-        chat_id=update.message.chat_id,
-        text=response_message
-    )
+    setAnswer(update.message.chat_id,response_message)
 
 
 def skipMusic(bot, update):
@@ -205,12 +202,9 @@ def skipMusic(bot, update):
         set_command(update,'skip')
         response_message = 'Reproduzindo próxima música!'
     else:
-        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
+        response_message = user_blocked
 
-    bot.send_message(
-        chat_id=update.message.chat_id,
-        text=response_message
-    )
+    setAnswer(update.message.chat_id,response_message)
 
 
 def setVolume(bot, update):
@@ -235,14 +229,23 @@ def setVolume(bot, update):
                 response_message = 'Digite um valor entre 0 a 100'
             else:
                 set_command(update,'volume'+str(text))
-                response_message = 'Volume alterado: %s%' % str(text)
+                response_message = 'Volume alterado para: '+str(text)+'%'
     else:
-        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
+        response_message = user_blocked
 
-    bot.send_message(
-        chat_id=update.message.chat_id,
-        text=response_message
-    )
+    setAnswer(update.message.chat_id,response_message)
+
+
+def nowPlaying(bot, update):
+    history(logger(update))
+    whitelist = getWhiteList()
+
+    if str(update.message.chat_id) in whitelist:
+        set_command(update,'nowplaying')
+    else:
+        response_message = user_blocked
+
+    setAnswer(update.message.chat_id,response_message)
         
 
 def playMusic(bot, update):
@@ -260,6 +263,7 @@ def playMusic(bot, update):
         elif ('youtube.com' in textToSearch or 'youtu.be' in textToSearch) and ' ' not in textToSearch:
             link = textToSearch
         else:
+            setAnswer(update.message.chat_id,'Pesquisando por: '+textToSearch)
             query = urllib.parse.quote(textToSearch)
             url = 'https://www.youtube.com/results?search_query=' + query
             response = urllib.request.urlopen(url)
@@ -269,18 +273,34 @@ def playMusic(bot, update):
                 link = 'https://www.youtube.com' + vid['href']
                 break
 
-    
         queue_file = open(path_queue, 'a')
         queue_file.write(link+'\n')
         queue_file.close()
-        response_message = 'Música adicionada na fila!'
+        response_message = 'Música adicionada: '+pafy.new(link).title
     else:
-        response_message = 'Você não tem permissão para usar este comando, digite /password <senha>'
+        response_message = user_blocked
 
-    bot.send_message(
-        chat_id=update.message.chat_id,
-        text=response_message
-    )
+    setAnswer(update.message.chat_id,response_message)
+
+
+def listen_communication():
+    while True:
+        sleep(0.3)
+        communication_file = open(path_communication, 'r')
+        messages = communication_file.read()
+        communication_file.close()
+
+        if messages:
+            communication_file = open(path_communication, 'w')
+            communication_file.write('')
+            communication_file.close()
+
+            messages = messages.split('\n')
+            for user_body in messages:
+                if user_body:
+                    user_id = user_body.split(' ',1)[0]
+                    user_msg = user_body.split(' ',1)[1]
+                    setAnswer(user_id,user_msg)
 
 
 def main():
@@ -289,6 +309,7 @@ def main():
 
     dispatcher.add_handler(CommandHandler(['password', 'pw'], verifyPassword))
     dispatcher.add_handler(CommandHandler(['skip', 's', 'next'], skipMusic))
+    dispatcher.add_handler(CommandHandler(['np', 'nowplaying'], nowPlaying))
     dispatcher.add_handler(CommandHandler(['play', 'p'], playMusic))
     dispatcher.add_handler(CommandHandler(['resume'], setResume))
     dispatcher.add_handler(CommandHandler(['volume'], setVolume))
@@ -301,7 +322,20 @@ def main():
     updater.idle()
 
 
+print('Bot iniciado!\n')
 
-if __name__ == '__main__':
-    print('Bot iniciado!\n')
+
+assincrono = True
+
+if assincrono == True:
+    if __name__ == "__main__":
+        telegram_process = Process(target=main)
+        send_messages = Process(target=listen_communication)
+
+        telegram_process.start()
+        send_messages.start()
+
+        telegram_process.join()
+        send_messages.join()
+else:
     main()
