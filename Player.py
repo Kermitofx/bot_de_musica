@@ -42,17 +42,19 @@ def get_link():
             queue_file.write(queue)
             queue_file.close()
 
-            return link
+            user_name = link.split(' ')[0]
+            link = link.split(' ')[1]
+
+            return user_name,link
 
         else:
-            return ''
+            return None,None
 
     except:
         queue_file = open(path_queue, 'w')
         queue_file.close()
-        link = ''
 
-    return link
+    return None,None
 
 
 def play_music(link):
@@ -82,7 +84,7 @@ def set_communication(telegram_id,msg):
 def main():
     while True:
         if player.get_state() == vlc.State.NothingSpecial or player.get_state() == vlc.State.Ended:
-            link = get_link()
+            user_name,link = get_link()
 
             if link:
                 music_title = play_music(link)
@@ -103,7 +105,7 @@ def main():
                 elif command == 'resume':
                     player.set_pause(0)
                 elif command == 'skip':
-                    link = get_link()
+                    user_name,link = get_link()
                     if link:
                         music_title = play_music(link)
                 elif command == 'volume':
@@ -113,9 +115,9 @@ def main():
                     player.audio_set_volume(int(command[6:]))
                 elif command == 'nowplaying':
                     if player.get_state() == vlc.State.Playing:
-                        msg = 'Tocando no momento: '+str(music_title)
+                        msg = 'Tocando no momento: '+str(music_title)+'<cut>Adicionado por: '+user_name
                     elif player.get_state() == vlc.State.Paused:
-                        msg = 'Música pausada: '+str(music_title)
+                        msg = 'Música pausada: '+str(music_title)+'<cut>Adicionado por: '+user_name
                     else:
                         msg = 'Nenhuma música está sendo reproduzida no momento'
                     

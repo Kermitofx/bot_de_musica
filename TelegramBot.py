@@ -274,7 +274,7 @@ def playMusic(bot, update):
                 break
 
         queue_file = open(path_queue, 'a')
-        queue_file.write(link+'\n')
+        queue_file.write(update.message.chat['first_name']+' '+link+'\n')
         queue_file.close()
         response_message = 'Música adicionada: '+pafy.new(link).title
     else:
@@ -300,6 +300,7 @@ def listen_communication():
                 if user_body:
                     user_id = user_body.split(' ',1)[0]
                     user_msg = user_body.split(' ',1)[1]
+                    user_msg = user_msg.replace('<cut>','\n')
                     setAnswer(user_id,user_msg)
 
 
