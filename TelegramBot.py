@@ -11,6 +11,7 @@ import pafy
 
 
 path_communication = 'files/communication.txt'
+path_notification = 'files/notification.txt'
 path_command = 'files/command.txt'
 path_whitelist = 'files/users.txt'
 path_history = 'files/history.txt'
@@ -26,6 +27,13 @@ try:
 except:
     command_file = open(path_command, 'w')
     command_file.close()
+
+try:
+    notification_file = open(path_notification, 'r')
+    notification_file.close()
+except:
+    notification_file = open(path_notification, 'w')
+    notification_file.close()
 
 try:
     path_file = open(path_queue, 'r')
@@ -62,11 +70,12 @@ except:
 user_blocked = 'Você não tem permissão para usar este comando, digite /password <senha>'
 password = input('Digite uma senha: ')
 help_message = '''/play nome_da_música ou url.
-/pause Pausa a faixa atualmente sendo reproduzida.
+/pause Pausar a música atual.
 /resume Retomar a música pausada.
-/np Mostra o nome da atual música.
-/volume Verifique ou altere o volume atual.
-/skip Ignora a música atual e reproduz a próxima música da fila'''
+/np Mostrar o nome da música atual.
+/volume Verificar ou alterar o volume atual.
+/skip Reproduzir a próxima música da fila (caso você seja o dono da música).
+/notification Exibe todos os comandos executados por outros usuários.'''
 
 
 
@@ -77,12 +86,10 @@ def history(msg):
     print(msg)
 
 
-
 def set_command(update,command_player):
     command_file = open(path_command, 'w')
     command_file.write(str(update.message.chat_id)+' '+command_player+' '+update.message.chat['first_name'])
     command_file.close()
-
 
 
 def getWhiteList():
@@ -98,7 +105,6 @@ def getWhiteList():
     return whitelist
 
 
-
 def logger(update):
     if update:
         log = datetime.strftime(datetime.now(), '%H:%M:%S %d/%m/%Y')
@@ -106,6 +112,12 @@ def logger(update):
         return log
     else:
         return 'Erro: objeto vazio'
+
+
+def set_communication(telegram_id,msg):
+    communication_file = open(path_communication, 'a')
+    communication_file.write(telegram_id+' '+msg+'\n')
+    communication_file.close()
 
 
 def setAnswer(user,message):
@@ -119,6 +131,7 @@ def setAnswer(user,message):
 def start(bot, update):
     history(logger(update))
     whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
         response_message = help_message
@@ -126,13 +139,12 @@ def start(bot, update):
         response_message = 'Digite /password <senha> para utilizar este bot'
 
     setAnswer(update.message.chat_id,response_message)
-    
 
 
 def verifyPassword(bot, update):
     history(logger(update))
-
     whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
         response_message = 'Você já está cadastrado, digite /help para ver os comandos.'
@@ -159,6 +171,7 @@ def verifyPassword(bot, update):
 def getHelp(bot, update):
     history(logger(update))
     whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
         response_message = help_message
@@ -168,9 +181,40 @@ def getHelp(bot, update):
     setAnswer(update.message.chat_id,response_message)
 
 
+def usersNotification(bot, update):
+    history(logger(update))
+    whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
+
+    if str(update.message.chat_id) in whitelist:
+        notification_file = open(path_notification, 'r')
+        notification_users = notification_file.read()
+        notification_file.close()
+
+        if str(update.message.chat_id) in notification_users:
+            notification_users = notification_users.replace(str(update.message.chat_id)+'\n','')
+
+            notification_file = open(path_notification, 'w')
+            notification_file.write(notification_users)
+            notification_file.close()
+
+            response_message = 'Notificações desabilitadas'
+        else:
+            notification_file = open(path_notification, 'a')
+            notification_file.write(str(update.message.chat_id)+'\n')
+            notification_file.close()
+
+            response_message = 'Notificações habilitadas'
+    else:
+        response_message = user_blocked
+
+    setAnswer(update.message.chat_id,response_message)
+
+
 def setPause(bot, update):
     history(logger(update))
     whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
         set_command(update,'pause')
@@ -184,6 +228,7 @@ def setPause(bot, update):
 def setResume(bot, update):
     history(logger(update))
     whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
         set_command(update,'resume')
@@ -197,6 +242,7 @@ def setResume(bot, update):
 def skipMusic(bot, update):
     history(logger(update))
     whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
         set_command(update,'skip')
@@ -210,6 +256,7 @@ def skipMusic(bot, update):
 def setVolume(bot, update):
     history(logger(update))
     whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
         if update.message.text == '/volume':
@@ -239,6 +286,7 @@ def setVolume(bot, update):
 def nowPlaying(bot, update):
     history(logger(update))
     whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
         set_command(update,'nowplaying')
@@ -251,6 +299,7 @@ def nowPlaying(bot, update):
 def playMusic(bot, update):
     history(logger(update))
     whitelist = getWhiteList()
+    set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
         try:
@@ -301,13 +350,35 @@ def listen_communication():
                     user_id = user_body.split(' ',1)[0]
                     user_msg = user_body.split(' ',1)[1]
                     user_msg = user_msg.replace('<cut>','\n')
-                    setAnswer(user_id,user_msg)
+
+                    if user_id == 'all':
+                        notification_file = open(path_notification, 'r')
+                        notification_users = notification_file.read()
+                        notification_file.close()
+
+                        notification_users = notification_users.split('\n')
+                        notification_users.pop(len(notification_users)-1)
+                        for user in notification_users:
+                            setAnswer(user,user_msg)
+                    elif 'all' in user_id:
+                        notification_file = open(path_notification, 'r')
+                        notification_users = notification_file.read()
+                        notification_file.close()
+
+                        notification_users = notification_users.split('\n')
+                        notification_users.pop(len(notification_users)-1)
+                        for user in notification_users:
+                            if not user in user_id:
+                                setAnswer(user,user_msg)
+                    else:
+                        setAnswer(user_id,user_msg)
 
 
 def main():
     updater = Updater(token)
     dispatcher = updater.dispatcher
 
+    dispatcher.add_handler(CommandHandler(['notification','notifications'], usersNotification))
     dispatcher.add_handler(CommandHandler(['password', 'pw'], verifyPassword))
     dispatcher.add_handler(CommandHandler(['skip', 's', 'next'], skipMusic))
     dispatcher.add_handler(CommandHandler(['np', 'nowplaying'], nowPlaying))
@@ -326,17 +397,12 @@ def main():
 print('Bot iniciado!\n')
 
 
-assincrono = True
+if __name__ == "__main__":
+    telegram_process = Process(target=main)
+    send_messages = Process(target=listen_communication)
 
-if assincrono == True:
-    if __name__ == "__main__":
-        telegram_process = Process(target=main)
-        send_messages = Process(target=listen_communication)
+    telegram_process.start()
+    send_messages.start()
 
-        telegram_process.start()
-        send_messages.start()
-
-        telegram_process.join()
-        send_messages.join()
-else:
-    main()
+    telegram_process.join()
+    send_messages.join()

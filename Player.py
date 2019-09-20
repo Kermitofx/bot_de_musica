@@ -94,7 +94,6 @@ def main():
             command = command_file.read()
             command_file.close()
 
-
             if command != '':
                 telegram_id = command.split(' ',2)[0]
                 telegram_name = command.split(' ',2)[2]
