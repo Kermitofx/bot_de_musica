@@ -67,6 +67,9 @@ except:
     token_file.write(str(token))
     token_file.close()
 
+allow_volume = False
+allow_skip = False
+
 user_blocked = 'Você não tem permissão para usar este comando, digite /password <senha>'
 password = input('Digite uma senha: ')
 help_message = '''/play nome_da_música ou url.
@@ -244,11 +247,14 @@ def skipMusic(bot, update):
     whitelist = getWhiteList()
     set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
-    if str(update.message.chat_id) in whitelist:
-        set_command(update,'skip')
-        response_message = 'Reproduzindo próxima música!'
+    if allow_skip == True:
+        if str(update.message.chat_id) in whitelist:
+            set_command(update,'skip')
+            response_message = 'Reproduzindo próxima música!'
+        else:
+            response_message = user_blocked
     else:
-        response_message = user_blocked
+        response_message = 'Comando desabilitado'
 
     setAnswer(update.message.chat_id,response_message)
 
@@ -259,24 +265,27 @@ def setVolume(bot, update):
     set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
     if str(update.message.chat_id) in whitelist:
-        if update.message.text == '/volume':
-            set_command(update,'volume')
-        else:
-            try:
-                text = int(update.message.text.split(' ',1)[1])
-
-                if text < 0:
-                    text = 0
-                elif text > 100:
-                    text = 100
-            except:
-                text = None
-
-            if text == None:
-                response_message = 'Digite um valor entre 0 a 100'
+        if allow_volume == True:
+            if update.message.text == '/volume':
+                set_command(update,'volume')
             else:
-                set_command(update,'volume'+str(text))
-                response_message = 'Volume alterado para: '+str(text)+'%'
+                try:
+                    text = int(update.message.text.split(' ',1)[1])
+
+                    if text < 0:
+                        text = 0
+                    elif text > 100:
+                        text = 100
+                except:
+                    text = None
+
+                if text == None:
+                    response_message = 'Digite um valor entre 0 a 100'
+                else:
+                    set_command(update,'volume'+str(text))
+                    response_message = 'Volume alterado para: '+str(text)+'%'
+        else:
+            response_message = 'Comando desabilitado'
     else:
         response_message = user_blocked
 
