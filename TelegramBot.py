@@ -367,6 +367,13 @@ def listen_communication():
                         notification_users.pop(len(notification_users)-1)
                         for user in notification_users:
                             setAnswer(user,user_msg)
+                    elif user_id == 'allow_users':
+                        allow_users = getWhiteList()
+
+                        allow_users = allow_users.split('\n')
+                        allow_users.pop(len(allow_users)-1)
+                        for user in allow_users:
+                            setAnswer(user,user_msg)
                     elif 'all' in user_id:
                         notification_file = open(path_notification, 'r')
                         notification_users = notification_file.read()
@@ -377,13 +384,6 @@ def listen_communication():
                         for user in notification_users:
                             if not user in user_id:
                                 setAnswer(user,user_msg)
-                    elif user_id == 'allow_users':
-                        allow_users = getWhiteList()
-
-                        allow_users = allow_users.split('\n')
-                        allow_users.pop(len(allow_users)-1)
-                        for user in allow_users:
-                            setAnswer(user,user_msg)
                     else:
                         setAnswer(user_id,user_msg)
 
