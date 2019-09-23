@@ -42,19 +42,20 @@ def get_link():
             queue_file.write(queue)
             queue_file.close()
 
-            user_name = link.split(' ')[0]
+            user_id = link.split(' ')[0]
+            user_name = link.split(' ')[2]
             link = link.split(' ')[1]
 
-            return user_name,link
+            return user_id,user_name,link
 
         else:
-            return None,None
+            return None,None,None
 
     except:
         queue_file = open(path_queue, 'w')
         queue_file.close()
 
-    return None,None
+    return None,None,None
 
 
 def play_music(link):
@@ -63,7 +64,6 @@ def play_music(link):
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
-        'age_limit': 50,
     })
 
     playurl = video.getbestaudio().url
@@ -84,10 +84,11 @@ def set_communication(telegram_id,msg):
 def main():
     while True:
         if player.get_state() == vlc.State.NothingSpecial or player.get_state() == vlc.State.Ended:
-            user_name,link = get_link()
+            user_id,user_name,link = get_link()
 
             if link:
                 music_title = play_music(link)
+                set_communication('allow_users','Tocando no momento: '+str(music_title)+'<cut>Adicionado por: '+user_name)
 
         else:
             command_file = open(path_command, 'r')
@@ -104,9 +105,15 @@ def main():
                 elif command == 'resume':
                     player.set_pause(0)
                 elif command == 'skip':
-                    user_name,link = get_link()
-                    if link:
-                        music_title = play_music(link)
+                    user_id,user_name,link = get_link()
+                    if user_name != None:
+                        if user_id == telegram_id:
+                            music_title = play_music(link)
+                            set_communication('allow_users','Tocando no momento: '+str(music_title)+'<cut>Adicionado por: '+user_name)
+                        else:
+                            set_communication(telegram_id,'Um pedido foi enviado a '+user_name+' para pular esta música.')
+                            set_communication(user_id,telegram_name+' gostaria de pular esta música, digite /skip')
+                    
                 elif command == 'volume':
                     msg = 'Volume atual: '+str(player.audio_get_volume())+'%'
                     set_communication(telegram_id,msg)

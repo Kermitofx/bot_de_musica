@@ -68,7 +68,7 @@ except:
     token_file.close()
 
 allow_volume = False
-allow_skip = False
+allow_skip = True
 
 user_blocked = 'Você não tem permissão para usar este comando, digite /password <senha>'
 password = input('Digite uma senha: ')
@@ -79,7 +79,6 @@ help_message = '''/play nome_da_música ou url.
 /volume Verificar ou alterar o volume atual.
 /skip Reproduzir a próxima música da fila (caso você seja o dono da música).
 /notification Exibe todos os comandos executados por outros usuários.'''
-
 
 
 def history(msg):
@@ -250,7 +249,6 @@ def skipMusic(bot, update):
     if allow_skip == True:
         if str(update.message.chat_id) in whitelist:
             set_command(update,'skip')
-            response_message = 'Reproduzindo próxima música!'
         else:
             response_message = user_blocked
     else:
@@ -332,7 +330,7 @@ def playMusic(bot, update):
                 break
 
         queue_file = open(path_queue, 'a')
-        queue_file.write(update.message.chat['first_name']+' '+link+'\n')
+        queue_file.write(str(update.message.chat_id)+' '+link+' '+update.message.chat['first_name']+'\n')
         queue_file.close()
         response_message = 'Música adicionada: '+pafy.new(link).title
     else:
@@ -379,6 +377,13 @@ def listen_communication():
                         for user in notification_users:
                             if not user in user_id:
                                 setAnswer(user,user_msg)
+                    elif user_id == 'allow_users':
+                        allow_users = getWhiteList()
+
+                        allow_users = allow_users.split('\n')
+                        allow_users.pop(len(allow_users)-1)
+                        for user in allow_users:
+                            setAnswer(user,user_msg)
                     else:
                         setAnswer(user_id,user_msg)
 

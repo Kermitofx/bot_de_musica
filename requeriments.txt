@@ -1,5 +1,6 @@
 python-telegram-bot
-python-vlc
 youtube-dl
-bs4
+python-vlc
+requests
 pafy
+bs4
