@@ -124,6 +124,7 @@ def set_communication(telegram_id,msg):
 
 def setAnswer(user,message):
     if message:
+        message = message.replace('&','')
         answer = requests.get('https://api.telegram.org/bot'+str(token)+'/sendMessage?chat_id='+str(user)+'&text='+str(message))
         return True
     else:
