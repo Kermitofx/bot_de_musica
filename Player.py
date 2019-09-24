@@ -112,7 +112,7 @@ def main():
                             set_communication('allow_users','Tocando no momento: '+str(music_title)+'<cut>Adicionado por: '+user_name)
                         else:
                             set_communication(telegram_id,'Um pedido foi enviado a '+user_name+' para pular esta música.')
-                            set_communication(user_id,telegram_name+' gostaria de pular esta música, digite /skip')
+                            set_communication(user_id,telegram_name+' gostaria de pular sua música: '+str(music_title)+'<cut>digite /skip para pular')
                     
                 elif command == 'volume':
                     msg = 'Volume atual: '+str(player.audio_get_volume())+'%'

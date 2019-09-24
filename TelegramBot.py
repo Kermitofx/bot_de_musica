@@ -308,6 +308,7 @@ def playMusic(bot, update):
     history(logger(update))
     whitelist = getWhiteList()
     set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
+    thumb = None
 
     if str(update.message.chat_id) in whitelist:
         try:
@@ -333,11 +334,21 @@ def playMusic(bot, update):
         queue_file = open(path_queue, 'a')
         queue_file.write(str(update.message.chat_id)+' '+link+' '+update.message.chat['first_name']+'\n')
         queue_file.close()
+
         response_message = 'Música adicionada: '+pafy.new(link).title
+        try:
+            thumb = pafy.new(link).thumb
+        except:
+            thumb = None
     else:
         response_message = user_blocked
 
     setAnswer(update.message.chat_id,response_message)
+    if thumb:
+        bot.sendPhoto(
+            chat_id=update.message.chat_id,
+            photo=thumb
+        )
 
 
 def listen_communication():
