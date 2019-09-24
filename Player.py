@@ -82,6 +82,8 @@ def set_communication(telegram_id,msg):
 
 
 def main():
+    user_id,user_name,link = None,None,None
+    print('Player iniciado!\n')
     while True:
         if player.get_state() == vlc.State.NothingSpecial or player.get_state() == vlc.State.Ended:
             user_id,user_name,link = get_link()
@@ -105,15 +107,17 @@ def main():
                 elif command == 'resume':
                     player.set_pause(0)
                 elif command == 'skip':
-                    user_id,user_name,link = get_link()
-                    if user_name != None:
-                        if user_id == telegram_id:
+                    if user_id and user_id != telegram_id:
+                        set_communication(telegram_id,'Um pedido foi enviado a '+user_name+' para pular esta música.')
+                        set_communication(user_id,telegram_name+' gostaria de pular sua música: '+str(music_title)+'<cut>digite /skip para pular')
+                    else:
+                        user_id,user_name,link = get_link()
+                        if link:
                             music_title = play_music(link)
                             set_communication('allow_users','Tocando no momento: '+str(music_title)+'<cut>Adicionado por: '+user_name)
                         else:
-                            set_communication(telegram_id,'Um pedido foi enviado a '+user_name+' para pular esta música.')
-                            set_communication(user_id,telegram_name+' gostaria de pular sua música: '+str(music_title)+'<cut>digite /skip para pular')
-                    
+                            set_communication(telegram_id,'Não há músicas na fila')
+
                 elif command == 'volume':
                     msg = 'Volume atual: '+str(player.audio_get_volume())+'%'
                     set_communication(telegram_id,msg)
@@ -135,5 +139,4 @@ def main():
         sleep(0.3)
 
 
-print('Player iniciado!\n')
 main()
