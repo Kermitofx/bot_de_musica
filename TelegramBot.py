@@ -67,7 +67,7 @@ except:
     token_file.write(str(token))
     token_file.close()
 
-allow_volume = False
+allow_volume = True
 allow_skip = True
 
 user_blocked = 'Você não tem permissão para usar este comando, digite /password <senha>'
