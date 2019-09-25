@@ -130,7 +130,10 @@ def main():
                         else:
                             msg = 'Nenhuma música está sendo reproduzida no momento'
                     elif player.get_state() == vlc.State.Paused:
-                        msg = 'Música pausada: '+str(music_title)+'<cut>Adicionado por: '+user_name
+                        if user_name:
+                            msg = 'Música pausada: '+str(music_title)+'<cut>Adicionado por: '+user_name
+                        else:
+                            msg = 'Nenhuma música está sendo reproduzida no momento'
                     else:
                         msg = 'Nenhuma música está sendo reproduzida no momento'
                     
