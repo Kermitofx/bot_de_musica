@@ -73,12 +73,13 @@ allow_skip = True
 user_blocked = 'Você não tem permissão para usar este comando, digite /password <senha>'
 password = input('Digite uma senha: ')
 help_message = '''/play nome_da_música ou url.
-/pause Pausar a música atual.
-/resume Retomar a música pausada.
-/np Mostrar o nome da música atual.
+/pause Pausa a música atual.
+/resume Retoma a música pausada.
+/np Mostra o nome da música atual.
 /volume Verificar ou alterar o volume atual.
-/skip Reproduzir a próxima música da fila (caso você seja o dono da música).
-/notification Exibe todos os comandos executados por outros usuários.'''
+/skip Reproduz a próxima música da fila (caso você seja o dono da música).
+/notification Exibe todos os comandos executados por outros usuários.
+/help Mostra este menu de ajuda.'''
 
 
 def history(msg):
