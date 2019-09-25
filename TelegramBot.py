@@ -337,19 +337,19 @@ def playMusic(bot, update):
         queue_file.close()
 
         response_message = 'Música adicionada: '+pafy.new(link).title
-        try:
-            thumb = pafy.new(link).thumb
-        except:
-            thumb = None
+        # try:
+        #     thumb = pafy.new(link).thumb
+        # except:
+        #     thumb = None
     else:
         response_message = user_blocked
 
     setAnswer(update.message.chat_id,response_message)
-    if thumb:
-        bot.sendPhoto(
-            chat_id=update.message.chat_id,
-            photo=thumb
-        )
+    # if thumb:
+    #     bot.sendPhoto(
+    #         chat_id=update.message.chat_id,
+    #         photo=thumb
+    #     )
 
 
 def listen_communication():
