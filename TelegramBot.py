@@ -191,7 +191,7 @@ def usersNotification(bot, update):
     whitelist = getWhiteList()
     set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
-    if str(update.message.chat_id) in whitelist:
+    if str(update.message.chat_id) in adm_list_id:
         notification_file = open(path_notification, 'r')
         notification_users = notification_file.read()
         notification_file.close()
@@ -211,7 +211,7 @@ def usersNotification(bot, update):
 
             response_message = 'Notificações habilitadas'
     else:
-        response_message = user_blocked
+        response_message = 'Oops, este comando é apenas para o administrador'
 
     setAnswer(update.message.chat_id,response_message)
 
