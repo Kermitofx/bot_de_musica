@@ -10,6 +10,7 @@ import requests
 import pafy
 
 
+adm_list_id = ['556607954']
 path_communication = 'files/communication.txt'
 path_notification = 'files/notification.txt'
 path_command = 'files/command.txt'
@@ -264,7 +265,7 @@ def setVolume(bot, update):
     whitelist = getWhiteList()
     set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
-    if str(update.message.chat_id) in whitelist:
+    if str(update.message.chat_id) in adm_list_id:
         if allow_volume == True:
             if update.message.text == '/volume':
                 set_command(update,'volume')
@@ -287,7 +288,7 @@ def setVolume(bot, update):
         else:
             response_message = 'Comando desabilitado'
     else:
-        response_message = user_blocked
+        response_message = 'Oops, este comando é apenas para o administrador'
 
     setAnswer(update.message.chat_id,response_message)
 
