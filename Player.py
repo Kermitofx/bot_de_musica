@@ -144,5 +144,4 @@ def main():
                 command_file.close()
         sleep(0.3)
 
-
 main()

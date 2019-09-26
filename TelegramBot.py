@@ -77,9 +77,7 @@ help_message = '''/play nome_da_música ou url.
 /pause Pausa a música atual.
 /resume Retoma a música pausada.
 /np Mostra o nome da música atual.
-/volume Verificar ou alterar o volume atual.
 /skip Reproduz a próxima música da fila (caso você seja o dono da música).
-/notification Exibe todos os comandos executados por outros usuários.
 /help Mostra este menu de ajuda.'''
 
 
@@ -265,11 +263,11 @@ def setVolume(bot, update):
     whitelist = getWhiteList()
     set_communication('all'+str(update.message.chat_id),update.message.chat['first_name']+' usou o comando: '+update.message.text)
 
-    if str(update.message.chat_id) in adm_list_id:
+    if str(update.message.chat_id) in whitelist:
         if allow_volume == True:
             if update.message.text == '/volume':
                 set_command(update,'volume')
-            else:
+            elif str(update.message.chat_id) in adm_list_id:
                 try:
                     text = int(update.message.text.split(' ',1)[1])
 
@@ -285,10 +283,12 @@ def setVolume(bot, update):
                 else:
                     set_command(update,'volume'+str(text))
                     response_message = 'Volume alterado para: '+str(text)+'%'
+            else:
+                response_message = 'Oops, este comando é apenas para o administrador'
         else:
             response_message = 'Comando desabilitado'
     else:
-        response_message = 'Oops, este comando é apenas para o administrador'
+        response_message = user_blocked
 
     setAnswer(update.message.chat_id,response_message)
 
