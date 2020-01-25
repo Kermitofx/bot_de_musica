@@ -10,7 +10,7 @@ import requests
 import pafy
 
 
-adm_list_id = ['556607954']
+adm_list_id = ['684842099']
 path_communication = 'files/communication.txt'
 path_notification = 'files/notification.txt'
 path_command = 'files/command.txt'
@@ -62,7 +62,7 @@ try:
     token = token_file.read()
     token_file.close()
 except:
-    token = input('Token do telegram não encontrado, cole o Token de seu Bot aqui: ')
+    token = input('928105941:AAGdwRkqhOvXcNvsCXIs8AQdMzRI5xEy_sA')
 
     token_file = open(path_token, 'w')
     token_file.write(str(token))
